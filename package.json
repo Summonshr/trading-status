@@ -14,5 +14,9 @@
   },
   "bugs": {
     "url": "https://github.com/liangxiaojuan/tradingview/issues"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.2.1",
+    "fastify": "^4.17.0"
   }
 }
