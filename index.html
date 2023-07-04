@@ -1,55 +1,106 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
-	<head>
-		<title>Smark Karobaar trading chart</title>
-		<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-		<script type="text/javascript" src="charting_library/charting_library.min.js"></script>
-		<script type="text/javascript" src="datafeeds/udf/dist/polyfills.js"></script>
-		<script type="text/javascript" src="datafeeds/udf/dist/bundle.js"></script>
-	</head>
+  <head>
+    <title>Smark Karobaar trading chart</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"
+    />
+    <script
+      type="text/javascript"
+      src="charting_library/charting_library.standalone.js"
+    ></script>
+    <script type="text/javascript" src="datafeeds/udf/dist/bundle.js"></script>
+  </head>
+  <body style="margin: 0px">
+    <div id="app">
+      <div id="tv_chart_container"></div>
+    </div>
+  </body>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script defer>
+        const { createApp } = Vue;
+        createApp({
+          mounted() {
+            const tvWidget = new TradingView.widget(this.meta);
+            var v = this;
+            tvWidget.onChartReady(() => {
+              tvWidget.headerReady().then(() => {
+                // Adjusted and unadjusted
+                const button = tvWidget.createButton();
+                const title = this.adjusted === true ? "Show Unadjusted" : "Show Adjusted";
+                button.classList.add("apply-common-tooltip");
 
-	<body style="margin:0px;">
-		<div id="app">
-			<div id="tv_chart_container"></div>
-		</div>
-	</body>
-	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-	<script defer>
-		const { createApp } = Vue
-		createApp({
-			methods: {
-				getParameterByName(name) {
-					name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-					var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-						results = regex.exec(location.search);
-					return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-				},
-			},
-			mounted() {
-				new TradingView.widget(this.meta);
-			},
-			data() {
-				return {
-					meta: {
-						fullscreen: true,
-						symbol: 'NEPSE',
-						interval: 'D',
-						container_id: "tv_chart_container",
-						// datafeed: new Datafeeds.UDFCompatibleDatafeed("http://0.0.0.0:3000"),
-						datafeed: new Datafeeds.UDFCompatibleDatafeed("https://smartkarobaar.com/admin/public/api/trading"),
-						library_path: "charting_library/",
-						locale: this.getParameterByName('lang') || "en",
-						disabled_features: ["use_localstorage_for_settings"],
-						enabled_features: ["study_templates"],
-						charts_storage_url: 'http://saveload.tradingview.com',
-						charts_storage_api_version: "1.1",
-						client_id: 'tradingview.com',
-						user_id: 'public_user_id',
-						theme: this.getParameterByName('theme'),
-					}
-				}
-			}
-		}).mount('#app')
-	</script>
+                let reloadChart = (adjs) => {
+                  let url = 'https://smartkarobaar.com/admin/public/api/v1/trading';
+                  if(!adjs) {
+                    url += '-unadjusted';
+                  }
+                  tvWidget._options.datafeed._historyProvider._datafeedUrl=url;
+                  tvWidget.load();
+                }
+
+                let adj = () => {
+                  this.adjusted = !this.adjusted;
+                  button.innerHTML = this.adjusted
+                    ? "Show Unadjusted"
+                    : "Show Adjusted";
+                  localStorage.setItem('adjusted', this.adjusted)
+                  reloadChart(this.adjusted)
+                }
+                if(!this.adjusted) {
+                  reloadChart()
+                }
+
+                button.addEventListener("click", adj);
+                button.innerHTML = title;
+                const logo = tvWidget.createButton();
+                logo.innerHTML = '<img src="/logo.webp" />';
+
+                // Dark mode
+                let themeButton = tvWidget.createButton();
+                themeButton.innerHTML = localStorage.getItem('theme') || 'Light'
+                themeButton.addEventListener('click', ()=>{
+                  themeButton.innerHTML = themeButton.innerHTML === 'Light' ? 'Dark' : 'Light'
+                  tvWidget.changeTheme(themeButton.innerHTML)
+                  localStorage.setItem('theme', themeButton.innerHTML)
+                })
+              });
+            });
+          },
+          data() {
+            let datafeedUrl = 'https://smartkarobaar.com/admin/public/api/v1/trading'
+            return {
+              adjusted: localStorage.getItem('adjusted') === 'false' ? false : true,
+              meta: {
+                fullscreen: true,
+                symbol: "AHPC",
+                interval: "D",
+                container_id: "tv_chart_container",
+                datafeed: new Datafeeds.UDFCompatibleDatafeed(
+                  datafeedUrl,
+                  undefined,
+                ),
+                library_path: "charting_library/",
+                locale: "en",
+                disabled_features: [
+                  "use_localstorage_for_settings",
+                  "left_tollbar",
+                ],
+                enabled_features: [],
+                charts_storage_url: "http://saveload.tradingview.com",
+                charts_storage_api_version: "1.1",
+                client_id: "tradingview.com",
+                user_id: "public_user_id",
+                timeframe: "3M",
+                timezone: "Asia/Kathmandu",
+                theme: localStorage.getItem('theme') || 'Light',
+                symbol_search_request_delay: 300,
+                time_frames: [],
+              },
+            };
+          },
+        }).mount("#app");
+  </script>
 </html>

@@ -6,10 +6,8 @@
 
 		<!-- Fix for iOS Safari zooming bug -->
 		<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 
-		<script type="text/javascript" src="charting_library/charting_library.min.js"></script>
-		<script type="text/javascript" src="datafeeds/udf/dist/polyfills.js"></script>
+		<script type="text/javascript" src="charting_library/charting_library.standalone.js"></script>
 		<script type="text/javascript" src="datafeeds/udf/dist/bundle.js"></script>
 
 		<script type="text/javascript">
@@ -22,23 +20,33 @@
 			}
 
 		  function initOnReady() {
+				var datafeedUrl = "https://demo-feed-data.tradingview.com";
+				var customDataUrl = getParameterByName('dataUrl');
+				if (customDataUrl !== "") {
+					datafeedUrl = customDataUrl.startsWith('https://') ? customDataUrl : `https://${customDataUrl}`;
+				}
+
 				var widget = new TradingView.widget({
 					fullscreen: true,
 					symbol: 'AAPL',
-					interval: 'D',
-					container_id: "tv_chart_container",
+					interval: '1D',
+					container: "tv_chart_container",
 					//	BEWARE: no trailing slash is expected in feed URL
-					datafeed: new Datafeeds.UDFCompatibleDatafeed("https://demo_feed.tradingview.com"),
+					datafeed: new Datafeeds.UDFCompatibleDatafeed(datafeedUrl, undefined, {
+						maxResponseLength: 1000,
+						expectedOrder: 'latestFirst',
+					}),
 					library_path: "charting_library/",
 					locale: getParameterByName('lang') || "en",
 
-					disabled_features: ["use_localstorage_for_settings"],
-					preset: "mobile",
+					disabled_features: [
+						'use_localstorage_for_settings',
+						'left_toolbar', 'header_widget', 'timeframes_toolbar', 'edit_buttons_in_legend', 'context_menus', 'control_bar', 'border_around_the_chart',
+					],
 					overrides: {
 						"paneProperties.background": "#222222",
 						"paneProperties.vertGridProperties.color": "#454545",
 						"paneProperties.horzGridProperties.color": "#454545",
-						"symbolWatermarkProperties.transparency": 90,
 						"scalesProperties.textColor" : "#AAA"
 					}
 				});

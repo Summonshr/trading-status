@@ -1,22 +1,28 @@
 {
-  "name": "tradingview",
-  "version": "1.0.0",
-  "description": "https://www.tradingview.com/",
-  "main": "charting_library/charting_library.min.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "private": true,
+  "main": "charting_library/charting_library.cjs.js",
+  "exports": {
+    ".": {
+      "types": "./charting_library.d.ts",
+      "import": "./charting_library/charting_library.esm.js",
+      "require": "./charting_library/charting_library.cjs.js"
+    },
+    "./datafeeds/udf": {
+      "types": "./datafeeds/udf/types.d.ts",
+      "default": "./datafeeds/udf/lib/udf-compatible-datafeed.js"
+    }
   },
-  "author": "tradingview",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liangxiaojuan/tradingview.git"
-  },
+  "module": "charting_library/charting_library.esm.js",
+  "files": [
+    "charting_library/",
+    "datafeeds/",
+    "/*.d.ts"
+  ],
   "bugs": {
-    "url": "https://github.com/liangxiaojuan/tradingview/issues"
+    "url": "https://github.com/tradingview/charting_library/issues"
   },
-  "dependencies": {
-    "@fastify/cors": "^8.2.1",
-    "fastify": "^4.17.0"
-  }
+  "homepage": "https://www.tradingview.com/charting-library-docs",
+  "name": "charting_library",
+  "version": "25.000",
+  "types": "charting_library.d.ts"
 }
